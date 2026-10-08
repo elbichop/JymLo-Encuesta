@@ -1,1 +1,89 @@
-
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PrecioJusto | Encuesta</title>
+<style>
+:root{color-scheme:dark;--bg:#080808;--panel:#111111;--text:#fff;--muted:#a0a0a0;--green:#34c759;--border:#292929}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+main{max-width:620px;margin:0 auto;padding:30px 20px 50px}
+header{display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);padding-bottom:22px}
+.logo{width:35px;height:35px;background:var(--green);color:#080808;display:grid;place-items:center;border-radius:6px;font-weight:900}
+.brand{font-weight:800;letter-spacing:2px}
+.tag{margin-left:auto;color:var(--green);font-size:11px;letter-spacing:1px}
+.intro{padding:38px 0 26px}
+.eyebrow{font-size:11px;letter-spacing:2px;color:var(--green)}
+h1{font-size:clamp(30px,7vw,43px);line-height:1.08;letter-spacing:-1.5px;margin:14px 0}
+p{color:var(--muted);line-height:1.6}
+.progress{height:3px;background:#292929;margin:20px 0 28px}
+#bar{height:3px;background:var(--green);width:11%;transition:width .2s}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:23px}
+.step{font-size:11px;letter-spacing:1.5px;color:var(--green)}
+h2{font-size:21px;margin:15px 0 20px}
+.option{display:flex;align-items:center;gap:12px;border:1px solid #333;border-radius:8px;padding:14px;margin:10px 0;cursor:pointer;color:#eee}
+.option:has(input:checked){border-color:var(--green);background:#102015}
+input[type=radio]{accent-color:var(--green);width:17px;height:17px;flex-shrink:0}
+input[type=email],textarea{width:100%;padding:14px;background:#080808;border:1px solid #444;border-radius:8px;color:#fff;font:inherit;margin-top:8px}
+button{border:0;border-radius:8px;padding:16px;background:var(--green);color:#080808;font-weight:800;letter-spacing:.5px;cursor:pointer;width:100%;margin-top:20px;font-size:14px}
+button:disabled{opacity:.4;cursor:not-allowed}
+.back{background:transparent;color:#aaa;border:1px solid #333;margin-top:10px}
+.small{font-size:12px;color:#777;text-align:center;margin-top:24px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<header><div class="logo">PJ</div><div class="brand">PRECIOJUSTO</div><div class="tag">VALIDACIÓN 01</div></header>
+<section class="intro">
+<div class="eyebrow">ENCUESTA PARA EMPRESAS</div>
+<h1>¿SABES CUÁNTO DINERO SE TE ESCAPA?</h1>
+<p>Queremos entender cómo controlas las facturas de tus proveedores. Ayúdanos a mejorar PrecioJusto. Solo 2 minutos.</p>
+</section>
+<div class="progress"><div id="bar"></div></div>
+<form id="survey">
+<section class="panel" id="question"></section>
+<button type="submit" id="next">CONTINUAR →</button>
+<button type="button" id="back" class="back hidden">← ANTERIOR</button>
+</form>
+<section id="done" class="panel hidden">
+<div class="eyebrow">ENCUESTA COMPLETADA</div>
+<h2>GRACIAS POR AYUDARNOS.</h2>
+<p>Tus respuestas nos ayudan a construir una herramienta más útil para tu negocio.</p>
+<p id="contactStatus">Esta demostración todavía no envía tus respuestas.</p>
+</section>
+<p class="small">PRECISIÓN · PRIVACIDAD · CONTROL</p>
+</main>
+<script>
+const questions=[
+{title:"¿A qué se dedica tu empresa?",opts:["Construcción o reformas","Instalaciones, electricidad o fontanería","Mantenimiento o reparaciones","Transporte o logística","Comercio","Hostelería","Industria","Otro sector"]},
+{title:"¿Cuántas facturas de proveedores recibes al mes?",opts:["Menos de 20","Entre 20 y 50","Entre 51 y 200","Más de 200"]},
+{title:"¿Cómo controlas las subidas de precios?",opts:["Reviso las facturas manualmente","Utilizo Excel","Mi programa de gestión lo hace","No lo controlo sistemáticamente","Otro método"]},
+{title:"¿Has detectado tarde subidas de precios o errores en facturas?",opts:["Sí, varias veces","Sí, alguna vez","No estoy seguro","Nunca"]},
+{title:"¿Te sería útil una app que compare facturas y señale cambios de precios?",opts:["Muy útil","Algo útil","Poco útil","Nada útil"]},
+{title:"¿Probarías una app de Windows que analiza las facturas localmente, sin subirlas a la nube?",opts:["Sí","Quizá, si es fácil de usar","No"]},
+{title:"¿Pagarías 4,99 € al mes si te ayudase a detectar posibles sobrecostes?",opts:["Sí","Quizá, primero la probaría","No"]},
+{title:"¿Te gustaría participar como usuario de prueba?",opts:["Sí, quiero probarla","Quiero más información","No por ahora"]},
+{title:"Si quieres participar, deja tu correo (opcional).",email:true}
+];
+let index=0;const answers={};
+const area=document.getElementById("question"),next=document.getElementById("next"),back=document.getElementById("back"),bar=document.getElementById("bar");
+function render(){
+const q=questions[index];bar.style.width=((index+1)/questions.length*100)+"%";
+area.innerHTML='<div class="step">'+String(index+1).padStart(2,"0")+' / '+String(questions.length).padStart(2,"0")+'</div><h2>'+q.title+'</h2>';
+if(q.email){area.innerHTML+='<label for="email" style="color:#aaa;font-size:13px">Correo electrónico</label><input id="email" type="email" autocomplete="email" placeholder="tu@empresa.com" value="'+(answers[index]||'')+'"><p style="font-size:12px">Opcional. Esta página aún no transmite ni guarda respuestas.</p>'}
+else q.opts.forEach((o,i)=>{const checked=answers[index]===o?'checked':'';area.innerHTML+='<label class="option"><input type="radio" name="answer" value="'+o.replace(/"/g,'&quot;')+'" '+checked+'><span>'+o+'</span></label>'});
+next.textContent=index===questions.length-1?'FINALIZAR':'CONTINUAR →';back.classList.toggle('hidden',index===0);
+}
+document.getElementById("survey").addEventListener("submit",e=>{
+e.preventDefault();const q=questions[index];
+if(q.email){answers[index]=document.getElementById("email").value.trim()}
+else{const selected=area.querySelector('input[name="answer"]:checked');if(!selected){alert("Selecciona una respuesta para continuar.");return}answers[index]=selected.value}
+if(index<questions.length-1){index++;render()}else{document.getElementById("survey").classList.add("hidden");document.getElementById("done").classList.remove("hidden");bar.style.width="100%"}
+});
+back.addEventListener("click",()=>{if(index>0){index--;render()}});
+render();
+</script>
+</body>
+</html>
